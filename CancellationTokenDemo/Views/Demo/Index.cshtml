@@ -1,0 +1,351 @@
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "CancellationToken Demo";
+}
+
+<!-- Page Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="fw-bold mb-1">
+            <i class="bi bi-arrow-repeat text-info me-2"></i>CancellationToken — Live Demo
+        </h1>
+        <p class="text-secondary mb-0">
+            Click <strong class="text-light">Start</strong> on any scenario, then
+            <strong class="text-danger">Cancel</strong> mid-way (or just wait).
+            Watch your <kbd>dotnet run</kbd> console for server-side logs.
+        </p>
+    </div>
+</div>
+
+<!-- Legend Row -->
+<div class="row g-2 mb-4">
+    <div class="col-auto">
+        <span class="badge bg-warning text-dark"><i class="bi bi-circle-fill me-1"></i>Running</span>
+    </div>
+    <div class="col-auto">
+        <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Success</span>
+    </div>
+    <div class="col-auto">
+        <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Cancelled</span>
+    </div>
+    <div class="col-auto">
+        <span class="badge bg-warning"><i class="bi bi-clock me-1"></i>Timeout</span>
+    </div>
+    <div class="col-auto">
+        <span class="badge bg-secondary"><i class="bi bi-dash-circle me-1"></i>Idle</span>
+    </div>
+</div>
+
+<div class="row g-4">
+
+    <!-- SCENARIO 1 -->
+    <div class="col-12 col-lg-6">
+        <div class="card h-100 border-secondary scenario-card" id="card1">
+            <div class="card-header d-flex align-items-center gap-2 border-secondary">
+                <span class="badge bg-info text-dark">Scenario 1</span>
+                <span class="fw-semibold">Basic Request Cancellation</span>
+                <span class="ms-auto status-dot" id="dot1"><i class="bi bi-circle text-secondary"></i></span>
+            </div>
+            <div class="card-body">
+                <p class="text-secondary small mb-3">
+                    Fires a <strong class="text-light">10-second simulated DB query</strong>.
+                    Cancel mid-way — the server stops the query immediately and frees the connection.
+                </p>
+
+                <!-- Log area -->
+                <div class="log-box mb-3" id="log1">
+                    <span class="text-secondary"><i class="bi bi-hourglass me-1"></i>Waiting to start...</span>
+                </div>
+
+                <!-- Progress bar -->
+                <div class="progress mb-3 d-none" id="prog1" style="height:4px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" style="width:100%"></div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="d-flex gap-2">
+                    <button class="btn btn-info btn-sm px-3 btn-start"
+                            id="start1"
+                            onclick="startScenario(1, '/Demo/SlowQuery', 10)">
+                        <i class="bi bi-play-fill me-1"></i>Start
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm px-3 btn-cancel"
+                            id="cancel1"
+                            onclick="cancelScenario(1)"
+                            disabled>
+                        <i class="bi bi-stop-fill me-1"></i>Cancel
+                    </button>
+                </div>
+            </div>
+            <div class="card-footer border-secondary">
+                <small class="text-secondary">
+                    <i class="bi bi-code-slash me-1 text-info"></i>
+                    Server: <code>await Task.Delay(10s, ct)</code> → throws <code>OperationCanceledException</code>
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCENARIO 2 -->
+    <div class="col-12 col-lg-6">
+        <div class="card h-100 border-secondary scenario-card" id="card2">
+            <div class="card-header d-flex align-items-center gap-2 border-secondary">
+                <span class="badge bg-info text-dark">Scenario 2</span>
+                <span class="fw-semibold">Multi-Step Pipeline</span>
+                <span class="ms-auto status-dot" id="dot2"><i class="bi bi-circle text-secondary"></i></span>
+            </div>
+            <div class="card-body">
+                <p class="text-secondary small mb-3">
+                    Runs <strong class="text-light">5 steps × 2 seconds each</strong>.
+                    Cancel between steps — remaining steps are skipped.
+                    <code>ct.ThrowIfCancellationRequested()</code> guards each step.
+                </p>
+
+                <div class="log-box mb-3" id="log2">
+                    <span class="text-secondary"><i class="bi bi-hourglass me-1"></i>Waiting to start...</span>
+                </div>
+
+                <!-- Step indicators -->
+                <div class="d-flex gap-1 mb-3" id="steps2">
+                    <span class="badge bg-secondary step-badge" data-step="1">Step 1</span>
+                    <span class="badge bg-secondary step-badge" data-step="2">Step 2</span>
+                    <span class="badge bg-secondary step-badge" data-step="3">Step 3</span>
+                    <span class="badge bg-secondary step-badge" data-step="4">Step 4</span>
+                    <span class="badge bg-secondary step-badge" data-step="5">Step 5</span>
+                </div>
+
+                <div class="progress mb-3 d-none" id="prog2" style="height:4px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" style="width:100%"></div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button class="btn btn-info btn-sm px-3 btn-start"
+                            id="start2"
+                            onclick="startScenario(2, '/Demo/MultiStep', 10)">
+                        <i class="bi bi-play-fill me-1"></i>Start
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm px-3 btn-cancel"
+                            id="cancel2"
+                            onclick="cancelScenario(2)"
+                            disabled>
+                        <i class="bi bi-stop-fill me-1"></i>Cancel
+                    </button>
+                </div>
+            </div>
+            <div class="card-footer border-secondary">
+                <small class="text-secondary">
+                    <i class="bi bi-code-slash me-1 text-info"></i>
+                    Server: <code>ct.ThrowIfCancellationRequested()</code> before each step
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCENARIO 3 -->
+    <div class="col-12 col-lg-6">
+        <div class="card h-100 border-secondary scenario-card" id="card3">
+            <div class="card-header d-flex align-items-center gap-2 border-secondary">
+                <span class="badge bg-warning text-dark">Scenario 3</span>
+                <span class="fw-semibold">Timeout via LinkedTokenSource</span>
+                <span class="ms-auto status-dot" id="dot3"><i class="bi bi-circle text-secondary"></i></span>
+            </div>
+            <div class="card-body">
+                <p class="text-secondary small mb-3">
+                    Work takes <strong class="text-light">8 seconds</strong> but a
+                    <strong class="text-warning">5-second timeout</strong> fires first via
+                    <code>CreateLinkedTokenSource</code>. No need to cancel manually.
+                </p>
+
+                <div class="log-box mb-3" id="log3">
+                    <span class="text-secondary"><i class="bi bi-hourglass me-1"></i>Waiting to start...</span>
+                </div>
+
+                <!-- Countdown timer display -->
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="text-center">
+                        <div class="fs-4 fw-bold text-warning" id="timer3">—</div>
+                        <div class="text-secondary" style="font-size:0.65rem;">TIMEOUT IN</div>
+                    </div>
+                    <div class="progress flex-grow-1 d-none" id="prog3" style="height:4px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" style="width:100%"></div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button class="btn btn-warning btn-sm px-3 text-dark btn-start"
+                            id="start3"
+                            onclick="startScenario(3, '/Demo/WithTimeout', 8)">
+                        <i class="bi bi-play-fill me-1"></i>Start
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm px-3 btn-cancel"
+                            id="cancel3"
+                            onclick="cancelScenario(3)"
+                            disabled>
+                        <i class="bi bi-stop-fill me-1"></i>Cancel early
+                    </button>
+                </div>
+            </div>
+            <div class="card-footer border-secondary">
+                <small class="text-secondary">
+                    <i class="bi bi-code-slash me-1 text-warning"></i>
+                    Server: <code>catch (OpCancelled) when (timeoutCts.IsCancellationRequested)</code>
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCENARIO 4 -->
+    <div class="col-12 col-lg-6">
+        <div class="card h-100 border-secondary scenario-card" id="card4">
+            <div class="card-header d-flex align-items-center gap-2 border-secondary">
+                <span class="badge bg-info text-dark">Scenario 4</span>
+                <span class="fw-semibold">Manual Cancel Button</span>
+                <span class="ms-auto status-dot" id="dot4"><i class="bi bi-circle text-secondary"></i></span>
+            </div>
+            <div class="card-body">
+                <p class="text-secondary small mb-3">
+                    Runs for <strong class="text-light">15 seconds</strong>, logging every second.
+                    Click Cancel at any point — server logs stop at that <em>exact</em> second.
+                </p>
+
+                <div class="log-box mb-3" id="log4">
+                    <span class="text-secondary"><i class="bi bi-hourglass me-1"></i>Waiting to start...</span>
+                </div>
+
+                <!-- Elapsed ticker -->
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="text-center">
+                        <div class="fs-4 fw-bold text-info" id="timer4">0s</div>
+                        <div class="text-secondary" style="font-size:0.65rem;">ELAPSED</div>
+                    </div>
+                    <div class="progress flex-grow-1 d-none" id="prog4" style="height:4px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" style="width:100%"></div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button class="btn btn-info btn-sm px-3 btn-start"
+                            id="start4"
+                            onclick="startScenario(4, '/Demo/ManualCancel', 15)">
+                        <i class="bi bi-play-fill me-1"></i>Start
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm px-3 btn-cancel"
+                            id="cancel4"
+                            onclick="cancelScenario(4)"
+                            disabled>
+                        <i class="bi bi-stop-fill me-1"></i>Cancel
+                    </button>
+                </div>
+            </div>
+            <div class="card-footer border-secondary">
+                <small class="text-secondary">
+                    <i class="bi bi-code-slash me-1 text-info"></i>
+                    Server: <code>ct.ThrowIfCancellationRequested()</code> inside while loop
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCENARIO 5 — Bad Pattern -->
+    <div class="col-12">
+        <div class="card border-danger scenario-card bad-scenario" id="card5">
+            <div class="card-header d-flex align-items-center gap-2" style="background:rgba(220,38,38,0.1); border-color: rgba(220,38,38,0.5);">
+                <i class="bi bi-exclamation-triangle-fill text-danger"></i>
+                <span class="badge bg-danger">Scenario 5 — ❌ Anti-Pattern</span>
+                <span class="fw-semibold text-danger">Fire and Forget (Token NOT Passed)</span>
+                <span class="ms-auto status-dot" id="dot5"><i class="bi bi-circle text-secondary"></i></span>
+            </div>
+            <div class="card-body">
+                <div class="row align-items-center g-3">
+                    <div class="col-12 col-md-5">
+                        <p class="text-secondary small mb-2">
+                            Starts a 10-second task <strong class="text-danger">without passing the CancellationToken</strong>.
+                            Cancel or close the tab — the server <strong class="text-danger">keeps running anyway</strong>.
+                            Watch the console log "Completed" 10 seconds after you cancelled.
+                        </p>
+                        <div class="alert alert-danger py-2 px-3 small mb-0">
+                            <i class="bi bi-bug-fill me-1"></i>
+                            <strong>This wastes:</strong> DB connections, thread pool threads, and memory — for a client that already left.
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="log-box" id="log5">
+                            <span class="text-secondary"><i class="bi bi-hourglass me-1"></i>Waiting to start...</span>
+                        </div>
+                        <div class="progress mt-2 d-none" id="prog5" style="height:4px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" style="width:100%"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <div class="d-flex flex-column gap-2">
+                            <button class="btn btn-danger btn-sm px-3 btn-start"
+                                    id="start5"
+                                    onclick="startScenario(5, '/Demo/FireAndForget', 10)">
+                                <i class="bi bi-play-fill me-1"></i>Start (Bad Pattern)
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm px-3 btn-cancel"
+                                    id="cancel5"
+                                    onclick="cancelScenario(5)"
+                                    disabled>
+                                <i class="bi bi-stop-fill me-1"></i>Cancel (server ignores it)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer" style="border-color: rgba(220,38,38,0.3); background:rgba(220,38,38,0.05);">
+                <small class="text-danger">
+                    <i class="bi bi-x-circle me-1"></i>
+                    Bad code: <code class="text-danger">await Task.Delay(10000);</code> — token completely ignored.
+                    Compare with: <code class="text-success">await Task.Delay(10000, ct);</code>
+                </small>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- How It Works accordion -->
+<div class="row mt-5">
+    <div class="col-12">
+        <h5 class="fw-bold mb-3 text-secondary"><i class="bi bi-info-circle me-2"></i>How It Works</h5>
+        <div class="accordion accordion-flush" id="howItWorks">
+            <div class="accordion-item bg-dark border-secondary">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed bg-dark text-light" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#flow">
+                        <i class="bi bi-diagram-3 me-2 text-info"></i> Request → Cancellation Flow
+                    </button>
+                </h2>
+                <div id="flow" class="accordion-collapse collapse" data-bs-parent="#howItWorks">
+                    <div class="accordion-body text-secondary small">
+                        <ol class="mb-0">
+                            <li class="mb-1">jQuery AJAX sends a request with an <strong class="text-light">AbortController signal</strong> attached via <code>XMLHttpRequest</code></li>
+                            <li class="mb-1">User clicks Cancel → <code>xhr.abort()</code> is called → TCP connection drops</li>
+                            <li class="mb-1">ASP.NET Core detects the disconnect on the next socket I/O</li>
+                            <li class="mb-1"><code>HttpContext.RequestAborted</code> fires → your <code>CancellationToken ct</code> is cancelled</li>
+                            <li class="mb-1"><code>Task.Delay(…, ct)</code> or <code>ToListAsync(ct)</code> throws <code>OperationCanceledException</code></li>
+                            <li>Server catches it, logs the cancellation, returns <code>Empty</code> (client is gone anyway)</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item bg-dark border-secondary">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed bg-dark text-light" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#jqueryNote">
+                        <i class="bi bi-filetype-js me-2 text-warning"></i> jQuery AJAX + XHR Abort
+                    </button>
+                </h2>
+                <div id="jqueryNote" class="accordion-collapse collapse" data-bs-parent="#howItWorks">
+                    <div class="accordion-body text-secondary small">
+                        jQuery's <code>$.ajax()</code> returns a <code>jqXHR</code> object.
+                        Calling <code>jqXHR.abort()</code> triggers the browser to close the TCP connection,
+                        which is exactly what the server needs to detect cancellation.
+                        The <code>error</code> callback receives <code>status = "abort"</code> when this happens.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

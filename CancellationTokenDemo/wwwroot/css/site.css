@@ -1,0 +1,121 @@
+/* Dark theme overrides & custom components */
+
+body {
+    background-color: #0d1117;
+    min-height: 100vh;
+}
+
+#mainNav {
+    background-color: #161b22 !important;
+}
+
+/* Cards */
+.scenario-card {
+    background-color: #161b22;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.scenario-card:hover {
+    box-shadow: 0 0 0 1px rgba(88, 166, 255, 0.2);
+}
+
+.scenario-card.bad-scenario:hover {
+    box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.3);
+}
+
+/* Log box */
+.log-box {
+    background-color: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 0.6rem 0.85rem;
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    font-size: 0.78rem;
+    min-height: 2.8rem;
+    display: flex;
+    align-items: center;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.log-box.state-running {
+    border-color: #d29922;
+    background-color: #1c1a0e;
+    color: #e3b341;
+}
+
+.log-box.state-success {
+    border-color: #238636;
+    background-color: #0d1f0f;
+    color: #3fb950;
+}
+
+.log-box.state-cancelled {
+    border-color: #da3633;
+    background-color: #1f0d0d;
+    color: #f85149;
+}
+
+.log-box.state-timeout {
+    border-color: #d29922;
+    background-color: #1c1400;
+    color: #f0883e;
+}
+
+/* Status dot animation */
+.status-dot .bi-circle-fill {
+    animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.3; }
+}
+
+/* Step badges */
+.step-badge {
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-size: 0.7rem;
+}
+
+.step-badge.active {
+    background-color: #1f6feb !important;
+    transform: scale(1.1);
+}
+
+.step-badge.done {
+    background-color: #238636 !important;
+}
+
+.step-badge.skipped {
+    background-color: #6e4040 !important;
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+/* Accordion */
+.accordion-button::after {
+    filter: invert(1);
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: #1f2937 !important;
+    color: #60a5fa !important;
+}
+
+/* Kbd styling */
+kbd {
+    background-color: #21262d;
+    border: 1px solid #30363d;
+    border-radius: 4px;
+    color: #e6edf3;
+    font-size: 0.75rem;
+    padding: 0.1rem 0.4rem;
+}
+
+code {
+    color: #79c0ff;
+    background-color: #161b22;
+    padding: 0.1rem 0.3rem;
+    border-radius: 4px;
+    font-size: 0.78rem;
+}

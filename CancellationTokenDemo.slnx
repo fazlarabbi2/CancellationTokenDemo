@@ -1,5 +1,3 @@
 <Solution>
-  <Folder Name="/App/">
-    <Project Path="App/CancellationTokenDemo.csproj" />
-  </Folder>
+  <Project Path="CancellationTokenDemo/CancellationTokenDemo.csproj" />
 </Solution>
